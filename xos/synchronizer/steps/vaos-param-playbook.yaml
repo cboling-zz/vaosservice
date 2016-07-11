@@ -1,0 +1,122 @@
+private_network: "{{ private_network }}"
+private_gw_address: "{{ private_ip_gateway }}"
+
+public_network: "{{ public_network }}"
+public_gw_address: "{{ public_ip_gateway }}"
+
+{% if management_network %}
+management_network: "{{ management_network }}"
+{% endif %}
+
+zone: "{{ zone }}"
+
+user_data: |
+  ! ADTRAN, Inc. OS version R12.1.M.2.E
+  ! Platform: vAOS, part number 18005150F1
+  ! Serial number E2B684CC-46CB-4E4E-AE9B-F8FB743DEDF5
+  !
+  !
+  hostname "vAOS-router"
+  enable password adtran
+  !
+  !
+  clock timezone -6-Central-Time
+  !
+  ip subnet-zero
+  ip classless
+  ip routing
+  ipv6 unicast-routing
+  !
+  !
+  domain-proxy
+  !name-server 10.0.4.254
+  name-server 10.17.175.254
+  !
+  !
+  auto-config
+  !
+  event-history on
+  no logging forwarding
+  no logging email
+  !
+  no service password-encryption
+  !
+  username "adtran" password "adtran"
+  !
+  !
+  no ip firewall alg msn
+  no ip firewall alg mszone
+  no ip firewall alg h323
+  !
+  !
+  ip dhcp excluded-address 10.17.176.14
+  !
+  ip dhcp pool "Subscriber-CPE-SUB"
+    network 10.17.176.0 255.255.255.240
+    dns-server 10.17.176.14
+    default-router 10.17.176.14
+  !
+  !
+  interface eth 0/1
+    ip address  "{{ private_ip_gateway }}" 255.255.255.0
+    no shutdown
+  !
+  !
+  interface eth 0/2
+    ip address  "{{ public_ip_gateway }}"  255.255.255.240
+    no shutdown
+  !
+{% if management_network %}
+  interface eth 0/3
+    ip address  10.17.173.110  255.255.255.0
+    no shutdown
+{% endif %}
+  !
+  ip route 0.0.0.0 0.0.0.0 10.17.175.254
+  !
+  no tftp server
+  no tftp server overwrite
+  no http server
+  no http secure-server
+  no snmp agent
+  no ip ftp server
+  no ip scp server
+  no ip sntp server
+  !
+  !
+  sip
+  sip udp 5060
+  no sip tcp
+  !
+  !
+  !
+  voice feature-mode network
+  voice forward-mode network
+  !
+  !
+  !
+  line con 0
+    no login
+  line con 1
+    no login
+  line con 2
+    no login
+  line con 3
+    no login
+  line con 4
+    no login
+  !
+  line telnet 0 4
+    login
+    no shutdown
+  line ssh 0 4
+    login local-userlist
+    no shutdown
+  !
+  sntp server time.nist.gov
+  !
+  !
+  data-plane cpu mode dedicated
+  !
+  !
+  end

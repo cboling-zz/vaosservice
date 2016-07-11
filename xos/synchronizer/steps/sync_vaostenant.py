@@ -12,7 +12,7 @@ class SyncVaosTenant(SyncInstanceUsingTacker):
     provides = [VaosTenant]
     observes = VaosTenant
     requested_interval = 0
-    service_key_name = "/opt/xos/synchronizers/vaosservice/vaos_private_key"
+    # service_key_name = "/opt/xos/synchronizers/vaosservice/vaos_private_key"
 
     def __init__(self, *args, **kwargs):
         service = VaosService.get_service_objects().filter(id=o.provider_service.id)
@@ -41,6 +41,15 @@ class SyncVaosTenant(SyncInstanceUsingTacker):
             return None
 
         return service[0]
+
+    def get_key_name(self, instance):
+        if instance.slice.service and (instance.slice.service.kind==VCPE_KIND):
+            # We need to use the vsg service's private key. Onboarding won't
+            # by default give us another service's private key, so let's assume
+            # onboarding has been configured to add vsg_rsa to the vtr service.
+            return "/opt/xos/services/vaosservice/keys/vaos_rsa"
+        else:
+            raise Exception("VTR doesn't know how to get the private key for this instance")
 
     # Gets the attributes that are used by the Ansible template but are not
     # part of the set of default attributes.

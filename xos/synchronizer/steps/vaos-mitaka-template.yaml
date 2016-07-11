@@ -1,0 +1,163 @@
+tosca_definitions_version: tosca_simple_profile_for_nfv_1_0_0
+
+description: ADTRAN vAOS VNFD
+
+metadata:
+  template_name: adtn-vaos-vnfd
+  ID:            adtn-vaos-vnfd
+  vendor:        ADTRAN, Inc.
+  version:       0.0.1
+
+topology_template:
+
+  inputs:
+    # Allowed template parameters.  The following do not have defaults and must be
+    # provided via a parameters file during 'vnf-create':
+    #
+    # private_network   : Network connecting vAOS to customer
+    # private_gw_address: Fixed IP GW address on the private_network
+    #
+    # public_network    : Network connecting vAOS to internet/WAN
+    # public_gw_address : Fixed IP GW address on the public_network
+    #
+    # management_network: Network reachable by OpenStack controller for VNF monitoring
+    #                     and configuration purposes.
+    #
+    # user_data: TODO: need to see taylor's heat template first...
+    #
+    vm_image:
+      type: string
+      description: The Glance Image for the VNF
+      default: vAOS-firewall
+
+    zone:
+      type: string
+      description: Nova availability zone
+      default: nova
+
+    flavor:
+      type: string
+      description: The NOVA flavor for the image
+      default: m1.vaos
+
+    private_network:
+      type: string
+      description: The private/customer side of the network connection
+
+    private_gw_address:
+      type: string
+      description: Gateway IP Address for the private/customer side of the network connection
+
+    public_network:
+      type: string
+      description: The public/WAN side of the network connection
+
+    public_gw_address:
+      type: string
+      description: Gateway IP Address for the public/WAN side of the network connection
+
+    management_network:
+      type: string
+      description: The network to use for the vAOS management/configuration conneciton
+
+    user_data_format:
+      type: string
+      description: How the user_data should be formatted for the server. For HEAT_CFNTOOLS, the user_data is bundled as part of the heat-cfntools cloud-init boot configuration data. For RAW the user_data is passed to Nova unmodified. For SOFTWARE_CONFIG user_data is bundled as part of the software config data, and metadata is derived from any associated SoftwareDeployment resources.
+      default: RAW
+      constraints:
+        - valid_values: [ RAW, HEAT_CFNTOOLS, SOFTWARE_CONFIG ]
+
+    user_data:
+      type: string
+      description: User data script to be executed by cloud-init
+      default: |
+         #!/bin/bash
+         echo This space for rent
+
+  node_templates:
+    VDU1:
+      type: tosca.nodes.nfv.VDU.Tacker
+      properties:
+        image:             { get_input: vm_image }
+        availability_zone: { get_input: zone }
+        flavor:            { get_input: flavor }
+        mgmt_driver: noop
+        config: |
+          param0: key1
+          param1: key2
+        user_data_format:  { get_input: user_data_format }
+        user_data: { get_input: user_data }
+
+#      capabilities:
+#        nfv_compute:
+#          properties:
+#            num_cpus:  3
+#            mem_size:  { get_input: mem_size }
+#            ephemeral_size: { get_input: ephemeral_disk_size }
+
+    PrivateDataCP:
+      type: tosca.nodes.nfv.CP.Tacker
+      properties:
+        management: false
+        anti_spoofing_protection: false
+
+      attributes:
+        address:
+          - { get_input: private_gw_address }
+
+      requirements:
+        - virtualLink:
+            node: PrivateDataVL
+        - virtualBinding:
+            node: VDU1
+
+    PrivateDataVL:
+      type: tosca.nodes.nfv.VL
+      properties:
+        network_name: { get_input: private_network }
+        vendor: Tacker
+
+    #---------------------------------------------------------------
+
+    PublicDataCP:
+      type: tosca.nodes.nfv.CP.Tacker
+      properties:
+        management: false
+        anti_spoofing_protection: false
+
+      attributes:
+        address:
+          - { get_input: public_gw_address }
+
+      requirements:
+        - virtualLink:
+            node: PublicDataVL
+        - virtualBinding:
+            node: VDU1
+
+    PublicDataVL:
+      type: tosca.nodes.nfv.VL
+      properties:
+        network_name: { get_input: public_network }
+        vendor: Tacker
+
+    #---------------------------------------------------------------
+
+    ManagementDataCP:
+      type: tosca.nodes.nfv.CP.Tacker
+      properties:
+        management: true
+        # TODO: Set anti-spoofing to true?
+        anti_spoofing_protection: false
+
+      requirements:
+        - virtualLink:
+            node: ManagementDataVL
+        - virtualBinding:
+            node: VDU1
+
+    ManagementDataVL:
+      type: tosca.nodes.nfv.VL
+      properties:
+        network_name: { get_input: management_network }
+        vendor: Tacker

@@ -1,10 +1,8 @@
 manifest
-steps/sync_exampletenant.py
-steps/roles/install_apache/tasks/main.yml
-steps/roles/create_index/templates/index.html.j2
-steps/roles/create_index/tasks/main.yml
-steps/exampletenant_playbook.yaml
-exampleservice-synchronizer.py
+steps/sync_vaostenant.py
+steps/vaos-param-playbook.yaml
+steps/vaos-param-playbook.yaml
+vaosservice-synchronizer.py
 model-deps
 run.sh
-exampleservice_config
+vaosservice_config

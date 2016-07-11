@@ -20,6 +20,6 @@ topology_template:
           tosca_resource: tosca/resources/vaosservice.py, tosca/resources/vaostenant.py
           rest_service: api/service/vaosservice.py
           rest_tenant: api/tenant/vaostenant.py
-          private_key: file:///opt/xos/key_import/vaosservice_rsa
-          public_key: file:///opt/xos/key_import/vaosservice_rsa.pub
+          private_key: file:///opt/xos/key_import/vaos_rsa
+          public_key: file:///opt/xos/key_import/vaos_rsa.pub
 
