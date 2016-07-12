@@ -1,4 +1,4 @@
-# ExampleService
+# vAOS Service
 
 This is an vAOS service, specifically the Django Model and Admin.
 

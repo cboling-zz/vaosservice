@@ -1,8 +1,9 @@
 manifest
 steps/sync_vaostenant.py
-steps/vaos-param-playbook.yaml
+steps/vaos-mitaka-template.yaml
 steps/vaos-param-playbook.yaml
 vaosservice-synchronizer.py
 model-deps
 run.sh
+vaosservice-synchronizer.py
 vaosservice_config
