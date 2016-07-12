@@ -18,8 +18,8 @@ topology_template:
           synchronizer: synchronizer/manifest
           tosca_custom_types: vaosservice.yaml
           tosca_resource: tosca/resources/vaosservice.py, tosca/resources/vaostenant.py
-          rest_service: api/service/vaosservice.py
-          rest_tenant: api/tenant/vaostenant.py
+          rest_service: subdirectory:cord api/service/vaosservice.py
+          rest_tenant: subdirectory:cord api/tenant/vaostenant.py
           private_key: file:///opt/xos/key_import/vaos_rsa
           public_key: file:///opt/xos/key_import/vaos_rsa.pub
 
