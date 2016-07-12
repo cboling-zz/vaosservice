@@ -5,7 +5,6 @@ from django.db import models, transaction
 from xos.exceptions import *
 
 SERVICE_NAME = 'vaosservice'
-SERVICE_NAME = 'vaosservice'
 SERVICE_NAME_VERBOSE = 'vAOS Service'
 SERVICE_NAME_VERBOSE_PLURAL = 'vAOS Services'
 TENANT_NAME_VERBOSE = 'vAOS Tenant'

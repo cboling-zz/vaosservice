@@ -1,7 +1,7 @@
 import os
 import sys
 from django.db.models import Q, F
-from services.vaosservice.models import VaosService, VaosTenant
+from services.vaosservice.models import VaosService, VaosTenant, SERVICE_NAME
 from synchronizers.base.SyncInstanceUsingTacker import SyncInstanceUsingTacker
 
 parentdir = os.path.join(os.path.dirname(__file__), "..")
@@ -12,12 +12,12 @@ class SyncVaosTenant(SyncInstanceUsingTacker):
     provides = [VaosTenant]
     observes = VaosTenant
     requested_interval = 0
-    # service_key_name = "/opt/xos/synchronizers/vaosservice/vaos_private_key"
+    service_key_name = '/opt/xos/services/vaosservice/keys/vaos_rsa'
 
     def __init__(self, *args, **kwargs):
-        service = VaosService.get_service_objects().filter(id=o.provider_service.id)
-        self.vnfd_template = service.vnfd_template_file
-        self.vnf_parameter_template = service.vnf_parameter_template_file
+        # service = VaosService.get_service_objects().filter(id=o.provider_service.id)
+        # self.vnfd_template = service.vnfd_template_file
+        # self.vnf_parameter_template = service.vnf_parameter_template_file
         super(SyncVaosTenant, self).__init__(*args, **kwargs)
 
     def fetch_pending(self, deleted):
@@ -43,19 +43,19 @@ class SyncVaosTenant(SyncInstanceUsingTacker):
         return service[0]
 
     def get_key_name(self, instance):
-        if instance.slice.service and (instance.slice.service.kind==VCPE_KIND):
-            # We need to use the vsg service's private key. Onboarding won't
-            # by default give us another service's private key, so let's assume
+        if instance.slice.service and (instance.slice.service.kind == SERVICE_NAME):
+            # We need to use the vAOS service's private key. Onboarding won't
+            # by default give us another service's private key, so let's assumee
             # onboarding has been configured to add vsg_rsa to the vtr service.
-            return "/opt/xos/services/vaosservice/keys/vaos_rsa"
+            return self.service_key_name
         else:
-            raise Exception("VTR doesn't know how to get the private key for this instance")
+            raise Exception("vAOS doesn't know how to get the private key for this instance")
 
     # Gets the attributes that are used by the Ansible template but are not
     # part of the set of default attributes.
     def get_extra_attributes(self, o):
         # This is a place to include extra attributes that aren't part of the
-        # object itself. In the case of vCPE, we need to know:
+        # object itself. In the case of vAOS, we need to know:
         #   1) vlan_ids, for setting up networking in the vAOS VM
 
         fields = {'s_tag': o.s_tag,
